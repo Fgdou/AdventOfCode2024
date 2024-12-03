@@ -58,8 +58,32 @@ pub fn part_one(input: &str) -> Option<i32> {
     Some(safe.iter().filter(|i| **i).count() as i32)
 }
 
-pub fn part_two(input: &str) -> Option<u32> {
-    None
+fn generate_variations(list: &Vec<i32>) -> Vec<Vec<i32>> {
+    (0..list.len()).into_iter().map(|i| {
+        let mut list = list.clone();
+        list.remove(i);
+        list
+    }).collect()
+}
+
+pub fn part_two(input: &str) -> Option<i32> {
+    let list = parse_input(input);
+
+    let safe: Vec<bool> = list.iter().map(|numbers| {
+        let variations = generate_variations(numbers);
+
+        variations.iter().any(|numbers| {
+            // derivative
+            let derivatives = derivative(numbers);
+            let derivatives_abs: Vec<i32> = derivatives.iter().map(|n| n.abs()).collect();
+            // verify same sign
+            // verify between 1 and 3
+            same_sign(&derivatives) && all_between(&derivatives_abs, 1, 3)
+        })
+    }).collect();
+
+    // sum all results
+    Some(safe.iter().filter(|i| **i).count() as i32)
 }
 
 #[cfg(test)]
@@ -75,7 +99,7 @@ mod tests {
     #[test]
     fn test_part_two() {
         let result = part_two(&advent_of_code::template::read_file("examples", DAY));
-        assert_eq!(result, None);
+        assert_eq!(result, Some(4));
     }
 
     #[test]
