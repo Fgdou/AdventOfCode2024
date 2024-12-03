@@ -7,7 +7,7 @@ env:
 
 jobs:
     ci:
-        runs-on: rustlang/rust:nightly
+        runs-on: ubuntu-latest
         name: Continuous Integration
         steps:
             - uses: actions/checkout@v4
@@ -23,6 +23,7 @@ jobs:
                     target/
                 key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
                 restore-keys: ${{ runner.os }}-cargo-
+            - run: rustup update nightly && rustup default nightly
             - name: cargo test
               run: cargo test
             # uncomment to enable clippy linter
