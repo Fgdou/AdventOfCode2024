@@ -7,7 +7,7 @@ env:
 
 jobs:
     ci:
-        runs-on: ubuntu-latest
+        runs-on: rustlang/rust:nightly
         name: Continuous Integration
         steps:
             - uses: actions/checkout@v4
