@@ -25,7 +25,7 @@ test_lib = []
 chrono = { version = "0.4.38", optional = true }
 dhat = { version = "0.3.3", optional = true }
 pico-args = "0.5.0"
-regex = "1.11.1"
+regex = { version = "1.11.1", features = ["pattern"]}
 tinyjson = "2.5.1"
 
 # Solution dependencies
