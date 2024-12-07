@@ -32,6 +32,7 @@ enum Operator {
     ADD,
     MULTIPLY,
     NO_OP,
+    CONCATENATE,
 }
 
 fn calc(equation: &EquationInput, next_operator: &Operator, index_numbers: usize, computed_value: usize) -> bool {
@@ -44,6 +45,7 @@ fn calc(equation: &EquationInput, next_operator: &Operator, index_numbers: usize
         Operator::ADD => computed_value + next_number,
         Operator::MULTIPLY => computed_value * next_number,
         Operator::NO_OP => next_number,
+        Operator::CONCATENATE => panic!(),
     };
 
     calc(equation, &Operator::ADD, index_numbers+1, computed_value) ||
@@ -51,6 +53,27 @@ fn calc(equation: &EquationInput, next_operator: &Operator, index_numbers: usize
 }
 fn calc_all(equation: &EquationInput) -> bool {
     calc(equation, &Operator::NO_OP, 0, 0)
+}
+
+fn calc2(equation: &EquationInput, next_operator: &Operator, index_numbers: usize, computed_value: usize) -> bool {
+    let next_number = match equation.numbers.get(index_numbers) {
+        Some(n) => *n,
+        None => {return equation.test_value == computed_value;},
+    };
+
+    let computed_value = match next_operator {
+        Operator::ADD => computed_value + next_number,
+        Operator::MULTIPLY => computed_value * next_number,
+        Operator::NO_OP => next_number,
+        Operator::CONCATENATE => (computed_value.to_string() + &next_number.to_string()).parse().unwrap(),
+    };
+
+    calc2(equation, &Operator::ADD, index_numbers+1, computed_value) ||
+        calc2(equation, &Operator::MULTIPLY, index_numbers+1, computed_value) ||
+        calc2(equation, &Operator::CONCATENATE, index_numbers+1, computed_value)
+}
+fn calc_all2(equation: &EquationInput) -> bool {
+    calc2(equation, &Operator::NO_OP, 0, 0)
 }
 
 pub fn part_one(input: &str) -> Option<usize> {
@@ -64,8 +87,15 @@ pub fn part_one(input: &str) -> Option<usize> {
     Some(sum)
 }
 
-pub fn part_two(input: &str) -> Option<u32> {
-    None
+pub fn part_two(input: &str) -> Option<usize> {
+    let input = parse(input);
+
+    let sum = input.iter().filter(|equation| {
+        calc_all2(equation)
+    }).map(|equation| equation.test_value)
+    .sum();
+
+    Some(sum)
 }
 
 #[cfg(test)]
@@ -81,6 +111,6 @@ mod tests {
     #[test]
     fn test_part_two() {
         let result = part_two(&advent_of_code::template::read_file("examples", DAY));
-        assert_eq!(result, None);
+        assert_eq!(result, Some(11387));
     }
 }
