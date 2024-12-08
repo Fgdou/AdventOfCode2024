@@ -49,11 +49,37 @@ fn get_antinode(pos1: &Vector2d<i32>, pos2: &Vector2d<i32>, map_size: &Vector2d<
         Some(antinode)
     }
 }
+fn get_antinode2(pos1: &Vector2d<i32>, pos2: &Vector2d<i32>, map_size: &Vector2d<i32>) -> Vec<Vector2d<i32>> {
+    let diff = *pos2 - *pos1;
+
+    let mut res = vec!();
+    let mut i = 0;
+
+    loop {
+        let antinode = *pos2 + diff*i;
+
+        if antinode.x < 0 || antinode.y < 0 || antinode.x >= map_size.x || antinode.y >= map_size.y {
+            break;
+        } else {
+            res.push(antinode);
+        }
+        i += 1;
+    }
+
+    res
+}
 
 fn get_antinodes(antenas: &Vec<Vector2d<i32>>, map_size: &Vector2d<i32>) -> Vec<Vector2d<i32>> {
     iproduct!(antenas, antenas)
         .filter(|(a, b)| a != b)
         .map(|(a, b)| get_antinode(a, b, map_size))
+        .flatten()
+        .collect()
+}
+fn get_antinodes2(antenas: &Vec<Vector2d<i32>>, map_size: &Vector2d<i32>) -> Vec<Vector2d<i32>> {
+    iproduct!(antenas, antenas)
+        .filter(|(a, b)| a != b)
+        .map(|(a, b)| get_antinode2(a, b, map_size))
         .flatten()
         .collect()
 }
@@ -73,8 +99,19 @@ pub fn part_one(input: &str) -> Option<usize> {
     Some(antinodes.len())
 }
 
-pub fn part_two(input: &str) -> Option<u32> {
-    None
+pub fn part_two(input: &str) -> Option<usize> {
+    let input = parse(input);
+
+    let antinodes = input.antenas.values()
+        .map(|antenas| {
+            get_antinodes2(antenas, &input.map_size)
+        })
+        .flatten()
+        .fold(HashSet::new(), |mut acc, vec| {
+            acc.insert((vec.x, vec.y));
+            acc
+        });
+    Some(antinodes.len())
 }
 
 #[cfg(test)]
@@ -90,7 +127,7 @@ mod tests {
     #[test]
     fn test_part_two() {
         let result = part_two(&advent_of_code::template::read_file("examples", DAY));
-        assert_eq!(result, None);
+        assert_eq!(result, Some(34));
     }
 
     #[test]
