@@ -36,6 +36,29 @@ fn transform_rules(rules: &Vec<(usize, usize)>) -> HashMap<usize, HashSet<usize>
     map
 }
 
+fn check_rule_and_put_number_back(numbers: &mut Vec<usize>, rules: &HashMap<usize, HashSet<usize>>) {
+    let len = numbers.len();
+    let mut i = 0;
+    while i != len {
+        let n1 = *numbers.get(i).unwrap();
+        let ordered = (0..i).all(|i| {
+            let n2 = numbers.get(i).unwrap();
+            match rules.get(&n1) {
+                None => true,
+                Some(set) => !set.contains(n2)
+            }
+        });
+
+        if !ordered {
+            *numbers.get_mut(i).unwrap() = *numbers.get(i-1).unwrap();
+            *numbers.get_mut(i-1).unwrap() = n1;
+            i -= 1;
+        } else {
+            i += 1;
+        }
+    }
+}
+
 fn check_rules_for_numbers(numbers: &Vec<usize>, rules: &HashMap<usize, HashSet<usize>>) -> bool {
     numbers.iter().enumerate().all(|(index, n1)| {
         (0..index).all(|i| {
@@ -60,8 +83,21 @@ pub fn part_one(input: &str) -> Option<usize> {
     Some(sum)
 }
 
-pub fn part_two(input: &str) -> Option<u32> {
-    None
+pub fn part_two(input: &str) -> Option<usize> {
+    let input = parse_input(input);
+    let rules = transform_rules(&input.rules);
+
+    let sum = input.updates.clone()
+        .iter_mut()
+        .filter(|update| !check_rules_for_numbers(&update, &rules))
+        .map(|update| {
+            check_rule_and_put_number_back(update, &rules);
+            update
+        })
+        .map(|numbers| numbers.get(numbers.len()/2).unwrap())
+        .sum();
+
+    Some(sum)
 }
 
 #[cfg(test)]
@@ -77,6 +113,6 @@ mod tests {
     #[test]
     fn test_part_two() {
         let result = part_two(&advent_of_code::template::read_file("examples", DAY));
-        assert_eq!(result, None);
+        assert_eq!(result, Some(123));
     }
 }
