@@ -46,20 +46,6 @@ fn next(requested_number: u32, pos: &Vector2d<i32>, map: &Map, map_size: &Vector
     }
 }
 
-fn find_paths(map: &Map) -> Vec<(Vector2d<i32>, Possibilities)> {
-    let map_size = Vector2d::new(
-        map.get(0).unwrap().len() as i32, 
-        map.len() as i32
-    );
-
-    iproduct!(0..map_size.x, 0..map_size.y)
-        .map(|(x, y)| Vector2d::new(x, y))
-        .filter_map(|pos| {
-            Some((pos, next(0, &pos, map, &map_size)?))
-        })
-        .collect()
-}
-
 fn next2(requested_number: u32, pos: &Vector2d<i32>, map: &Map, map_size: &Vector2d<i32>) -> Option<usize> {
     let n = *map.get(pos.y as usize)?.get(pos.x as usize)?;
     if requested_number != n {
@@ -88,31 +74,36 @@ fn next2(requested_number: u32, pos: &Vector2d<i32>, map: &Map, map_size: &Vecto
     }
 }
 
-fn find_paths2(map: &Map) -> usize {
+pub fn part_one(input: &str) -> Option<usize> {
+    let map = parse(input);
     let map_size = Vector2d::new(
         map.get(0).unwrap().len() as i32, 
         map.len() as i32
     );
 
-    iproduct!(0..map_size.x, 0..map_size.y)
+    let count = iproduct!(0..map_size.x, 0..map_size.y)
         .map(|(x, y)| Vector2d::new(x, y))
         .filter_map(|pos| {
-            next2(0, &pos, map, &map_size)
+            Some(next(0, &pos, &map, &map_size)?.len())
         })
-        .sum()
-}
+        .sum();
 
-
-pub fn part_one(input: &str) -> Option<usize> {
-    let input = parse(input);
-    let paths = find_paths(&input);
-    let count = paths.iter().map(|(_, vec)| vec.len()).sum();
     Some(count)
 }
 
 pub fn part_two(input: &str) -> Option<usize> {
-    let input = parse(input);
-    let count = find_paths2(&input);
+    let map = parse(input);
+    let map_size = Vector2d::new(
+        map.get(0).unwrap().len() as i32, 
+        map.len() as i32
+    );
+
+    let count = iproduct!(0..map_size.x, 0..map_size.y)
+        .map(|(x, y)| Vector2d::new(x, y))
+        .filter_map(|pos| {
+            next2(0, &pos, &map, &map_size)
+        })
+        .sum();
     Some(count)
 }
 
